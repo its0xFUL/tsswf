@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=2.0, user-scalable=yes", target-densitydpi=device-dpi />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Stack+Sans+Text:wght@200..700&display=swap" rel="stylesheet">
+
+    <title>#PAGE_HEAD_TITLE | My Website</title>
+
+    <link rel="stylesheet" href="styles.css?v=#CSS_HASH">
+  </head>
+  <body class="stack-sans" data-page="#PAGE_ID">
+    <h1 style="margin-inline-start: 0.67em">#PAGE_TITLE</h1>
+    @IF ("#PAGE_ID" != "index") {
+      <a class="backToHomepage" href="index.html"><- Back to home</a>
+    }
+    <main>
+      #PAGE_CONTENT
+    </main>
+  </body>
+</html>

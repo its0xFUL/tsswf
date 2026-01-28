@@ -1,0 +1,8 @@
+#INPUT label
+<button onclick="onButtonClick()" class="customButton">
+  @IF ({label}) {
+    {label}
+  } @ELSE {
+    {children}
+  }
+</button>

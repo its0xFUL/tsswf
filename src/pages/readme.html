@@ -1,0 +1,239 @@
+#PAGE_TITLE:TSSWF Readme
+<h1 id="tsswf">TSSWF</h1>
+<p>Tom&#39;s Stupid-Simple Web Framework - A minimal static site generator with component support, CSS scoping, and conditional rendering.</p>
+<h2 id="project-structure">Project Structure</h2>
+<pre><code>src/
+├── skeleton.html        <span class="hljs-meta"># Base template for all pages</span>
+├── *.css                <span class="hljs-meta"># <span class="hljs-meta-keyword">Global</span> stylesheets (copied to dist/)</span>
+├── *.js                 <span class="hljs-meta"># <span class="hljs-meta-keyword">Global</span> scripts (copied to dist/)</span>
+├── pages/
+│   └── *.html           <span class="hljs-meta"># Page content files</span>
+├── components/
+│   └── <span class="hljs-keyword">button</span>/          <span class="hljs-meta"># Component directory (name = folder name)</span>
+│       ├── button.html  <span class="hljs-meta"># Component template (required)</span>
+│       ├── button.css   <span class="hljs-meta"># Component styles (optional, auto-scoped)</span>
+│       └── button.js    <span class="hljs-meta"># Component script (optional, inlined)</span>
+└── static/
+    └── *                <span class="hljs-meta"># Static assets (images, fonts, etc.)</span>
+
+dist/                    <span class="hljs-meta"># Build output</span>
+├── *.html
+├── *.css
+├── *.js
+└── static/
+</code></pre><h2 id="usage">Usage</h2>
+<pre><code class="lang-bash"><span class="hljs-keyword">python</span> build.<span class="hljs-keyword">py</span>
+</code></pre>
+<h2 id="pages">Pages</h2>
+<p>Pages live in <code>src/pages/</code> and are injected into <code>skeleton.html</code>. Each page can define metadata using directives at the top of the file:</p>
+<pre><code class="lang-html"><span class="hljs-comment">#PAGE_TITLE:About Us</span>
+<span class="hljs-comment">#PAGE_HEAD_TITLE:About</span>
+
+&lt;p&gt;This <span class="hljs-keyword">is</span> <span class="hljs-keyword">the</span> <span class="hljs-keyword">about</span> page content.&lt;/p&gt;
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Directive</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>#PAGE_TITLE:</code></td>
+<td>Page title (available as <code>#PAGE_TITLE</code> in skeleton)</td>
+</tr>
+<tr>
+<td><code>#PAGE_HEAD_TITLE:</code></td>
+<td>Browser tab title (falls back to <code>#PAGE_TITLE</code> if omitted)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="skeleton">Skeleton</h2>
+<p>The skeleton (<code>src/skeleton.html</code>) is the base template. Use these placeholders:</p>
+<pre><code class="lang-html"><span class="hljs-meta">&lt;!DOCTYPE html&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">html</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">head</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">meta</span> <span class="hljs-attr">charset</span>=<span class="hljs-string">"UTF-8"</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">meta</span> <span class="hljs-attr">name</span>=<span class="hljs-string">"viewport"</span> <span class="hljs-attr">content</span>=<span class="hljs-string">"width=device-width, initial-scale=1.0, maximum-scale=2.0, user-scalable=yes"</span>, <span class="hljs-attr">target-densitydpi</span>=<span class="hljs-string">device-dpi</span> /&gt;</span>
+
+    <span class="hljs-tag">&lt;<span class="hljs-name">title</span>&gt;</span>#PAGE_HEAD_TITLE | My Website<span class="hljs-tag">&lt;/<span class="hljs-name">title</span>&gt;</span>
+
+    <span class="hljs-tag">&lt;<span class="hljs-name">link</span> <span class="hljs-attr">rel</span>=<span class="hljs-string">"stylesheet"</span> <span class="hljs-attr">href</span>=<span class="hljs-string">"styles.css?v=#CSS_HASH"</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">head</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">body</span> <span class="hljs-attr">data-page</span>=<span class="hljs-string">"#PAGE_ID"</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">h1</span>&gt;</span>#PAGE_TITLE<span class="hljs-tag">&lt;/<span class="hljs-name">h1</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">main</span>&gt;</span>
+      #PAGE_CONTENT
+    <span class="hljs-tag">&lt;/<span class="hljs-name">main</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">body</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">html</span>&gt;</span>
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Placeholder</th>
+<th>Replaced With</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>#PAGE_HEAD_TITLE</code></td>
+<td>Value from page directive</td>
+</tr>
+<tr>
+<td><code>#PAGE_TITLE</code></td>
+<td>Value from page directive</td>
+</tr>
+<tr>
+<td><code>#PAGE_CONTENT</code></td>
+<td>The page&#39;s HTML content</td>
+</tr>
+<tr>
+<td><code>#PAGE_ID</code></td>
+<td>Filename without extension (e.g., <code>about</code> for <code>about.html</code>)</td>
+</tr>
+<tr>
+<td><code>#CSS_HASH</code></td>
+<td>Random cache-busting hash</td>
+</tr>
+</tbody>
+</table>
+<h2 id="components">Components</h2>
+<p>Components are reusable HTML fragments. Create a folder in <code>src/components/</code> with matching HTML file:</p>
+<pre><code>src<span class="hljs-regexp">/components/card/</span>
+├── card.html    <span class="hljs-comment"># Required</span>
+├── card.css     <span class="hljs-comment"># Optional</span>
+└── card.js      <span class="hljs-comment"># Optional</span>
+</code></pre><h3 id="using-components">Using Components</h3>
+<pre><code class="lang-html"><span class="hljs-comment">&lt;!-- Self-closing (no children) --&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">c-card</span> <span class="hljs-attr">title</span>=<span class="hljs-string">"Hello"</span> /&gt;</span>
+
+<span class="hljs-comment">&lt;!-- With children --&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">c-card</span> <span class="hljs-attr">title</span>=<span class="hljs-string">"Hello"</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>Card content goes here.<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">c-card</span>&gt;</span>
+</code></pre>
+<h3 id="defining-components">Defining Components</h3>
+<p><strong>card.html:</strong></p>
+<pre><code class="lang-html"><span class="xml">#INPUT title
+#INPUT subtitle
+
+<span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"card"</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">h2</span>&gt;</span></span><span class="hljs-template-variable">{title}</span><span class="xml"><span class="hljs-tag">&lt;/<span class="hljs-name">h2</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">h3</span>&gt;</span></span><span class="hljs-template-variable">{subtitle}</span><span class="xml"><span class="hljs-tag">&lt;/<span class="hljs-name">h3</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"card-body"</span>&gt;</span>
+        </span><span class="hljs-template-variable">{children}</span><span class="xml">
+    <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></span>
+</code></pre>
+<ul>
+<li><code>#INPUT name</code> declares an input variable</li>
+<li><code>{name}</code> substitutes the value (empty string if not provided)</li>
+<li><code>{children}</code> is always available and contains nested content</li>
+</ul>
+<h3 id="component-css">Component CSS</h3>
+<p>Component CSS is automatically scoped. Class selectors get a unique suffix to prevent collisions:</p>
+<p><strong>card.css:</strong></p>
+<pre><code class="lang-css"><span class="hljs-selector-class">.card</span> { <span class="hljs-attribute">border</span>: <span class="hljs-number">1px</span> solid <span class="hljs-number">#ccc</span>; }
+<span class="hljs-selector-class">.card-body</span> { <span class="hljs-attribute">padding</span>: <span class="hljs-number">1rem</span>; }
+</code></pre>
+<p>Becomes something like:</p>
+<pre><code class="lang-css"><span class="hljs-selector-class">.card_84721</span> { <span class="hljs-attribute">border</span>: <span class="hljs-number">1px</span> solid <span class="hljs-number">#ccc</span>; }
+<span class="hljs-selector-class">.card-body_84721</span> { <span class="hljs-attribute">padding</span>: <span class="hljs-number">1rem</span>; }
+</code></pre>
+<p>The HTML class references are updated to match.</p>
+<h3 id="component-js">Component JS</h3>
+<p>If a component has a <code>.js</code> file, it&#39;s inlined as a <code>&lt;script&gt;</code> tag after the component HTML.</p>
+<h2 id="conditionals">Conditionals</h2>
+<p>Use <code>@IF</code> / <code>@ELSE</code> blocks for conditional rendering. These work in both pages and the skeleton.</p>
+<pre><code class="lang-html"><span class="hljs-meta">@IF(showBanner)</span> {
+    <span class="hljs-variable">&lt;div class="banner"&gt;</span>Welcome!<span class="hljs-variable">&lt;/div&gt;</span>
+}
+
+<span class="hljs-meta">@IF(count</span> &gt; 0) {
+    <span class="hljs-variable">&lt;p&gt;</span>You have items.<span class="hljs-variable">&lt;/p&gt;</span>
+} <span class="hljs-meta">@ELSE</span> {
+    <span class="hljs-variable">&lt;p&gt;</span>No items yet.<span class="hljs-variable">&lt;/p&gt;</span>
+}
+</code></pre>
+<h3 id="supported-operators">Supported Operators</h3>
+<table>
+<thead>
+<tr>
+<th>Operator</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>==</code></td>
+<td><code>@IF(status == &quot;active&quot;)</code></td>
+</tr>
+<tr>
+<td><code>!=</code></td>
+<td><code>@IF(type != &quot;hidden&quot;)</code></td>
+</tr>
+<tr>
+<td><code>&lt;</code> <code>&gt;</code> <code>&lt;=</code> <code>&gt;=</code></td>
+<td><code>@IF(count &gt;= 10)</code></td>
+</tr>
+<tr>
+<td><code>AND</code></td>
+<td><code>@IF(loggedIn AND isAdmin)</code></td>
+</tr>
+<tr>
+<td><code>OR</code></td>
+<td><code>@IF(showA OR showB)</code></td>
+</tr>
+<tr>
+<td><code>NOT</code></td>
+<td><code>@IF(NOT disabled)</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="values">Values</h3>
+<ul>
+<li>Strings: <code>&quot;hello&quot;</code> or <code>&#39;hello&#39;</code> (or unquoted)</li>
+<li>Numbers: <code>42</code>, <code>3.14</code></li>
+<li>Booleans: <code>true</code>, <code>false</code></li>
+</ul>
+<p>Bare values are evaluated for truthiness: empty string and <code>false</code> are falsy, everything else is truthy.</p>
+<h2 id="example">Example</h2>
+<p><strong>src/skeleton.html:</strong></p>
+<pre><code class="lang-html"><span class="hljs-meta">&lt;!DOCTYPE html&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">html</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">head</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">title</span>&gt;</span>#PAGE_HEAD_TITLE<span class="hljs-tag">&lt;/<span class="hljs-name">title</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">head</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">body</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">nav</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">a</span> <span class="hljs-attr">href</span>=<span class="hljs-string">"/"</span>&gt;</span>Home<span class="hljs-tag">&lt;/<span class="hljs-name">a</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">nav</span>&gt;</span>
+    #PAGE_CONTENT
+<span class="hljs-tag">&lt;/<span class="hljs-name">body</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">html</span>&gt;</span>
+</code></pre>
+<p><strong>src/components/button/button.html:</strong></p>
+<pre><code class="lang-html"><span class="hljs-selector-id">#INPUT</span> <span class="hljs-selector-tag">label</span>
+<span class="hljs-selector-id">#INPUT</span> href
+
+&lt;<span class="hljs-selector-tag">a</span> class=<span class="hljs-string">"btn"</span> href=<span class="hljs-string">"{href}"</span>&gt;{label}&lt;/a&gt;
+</code></pre>
+<p><strong>src/pages/index.html:</strong></p>
+<pre><code class="lang-html"><span class="hljs-selector-id">#PAGE_TITLE</span>:Home
+
+&lt;h1&gt;Welcome&lt;/h1&gt;
+&lt;c-<span class="hljs-selector-tag">button</span> label=<span class="hljs-string">"Learn More"</span> href=<span class="hljs-string">"/about"</span> /&gt;
+</code></pre>
+<p><strong>Output (dist/index.html):</strong></p>
+<pre><code class="lang-html"><span class="hljs-meta">&lt;!DOCTYPE html&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">html</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">head</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">title</span>&gt;</span>Home<span class="hljs-tag">&lt;/<span class="hljs-name">title</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">head</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">body</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">nav</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">a</span> <span class="hljs-attr">href</span>=<span class="hljs-string">"/"</span>&gt;</span>Home<span class="hljs-tag">&lt;/<span class="hljs-name">a</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">nav</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">h1</span>&gt;</span>Welcome<span class="hljs-tag">&lt;/<span class="hljs-name">h1</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">a</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"btn"</span> <span class="hljs-attr">href</span>=<span class="hljs-string">"/about"</span>&gt;</span>Learn More<span class="hljs-tag">&lt;/<span class="hljs-name">a</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">body</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">html</span>&gt;</span>
+</code></pre>

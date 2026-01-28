@@ -1,0 +1,73 @@
+/* Your global CSS styles go here */
+/* You can also define scoped CSS styles per-component (see `components/button/button.css` for more details) */
+
+body {
+  margin: 0;
+}
+
+main {
+  width: 100vw;
+  height: calc(80vh);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+h1,h2,h3 {
+  font-weight: 300;
+}
+
+.stack-sans {
+  font-family: "Stack Sans Text", sans-serif;
+  font-optical-sizing: auto;
+  font-style: normal;
+  font-weight: 300;
+}
+
+body[data-page="readme"] {
+  display: flex;
+  justify-content: center;
+  padding-inline: 1.5rem;
+
+  >h1 {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 9;
+  }
+
+  main {
+    width: 100vw;
+    max-width: 1200px;
+    height: unset;
+    display: block;
+    margin-top: 8rem;
+    margin-bottom: 25vh;
+
+    &::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      height: 12rem;
+      left: 0;
+      right: 0;
+      background: linear-gradient(180deg,rgba(255, 255, 255, 1) 50%, rgba(255, 255, 255, 0) 100%);
+    }
+  }
+
+  th {
+    text-align: start;
+  }
+
+  .backToHomepage {
+    position: fixed;
+    top: 4rem;
+    left: 1.5rem;
+    z-index: 9;
+  }
+
+  pre {
+    white-space: break-spaces;
+  }
+}
