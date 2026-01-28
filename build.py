@@ -4,24 +4,18 @@ TSSWF - Static site generator with component support.
 
 Processes HTML pages with custom <c-*> components, conditional blocks,
 and CSS scoping.
+
+Usage: python build.py [project_path]
+  project_path: Root directory containing src/ folder (default: current directory)
 """
 
+import sys
 import shutil
 import re
 import operator
 import random
 from pathlib import Path
 from dataclasses import dataclass
-
-# =============================================================================
-# Configuration
-# =============================================================================
-
-SRC_DIR = Path("src")
-PAGES_DIR = SRC_DIR / "pages"
-COMPONENTS_DIR = SRC_DIR / "components"
-STATIC_DIR = SRC_DIR / "static"
-OUTPUT_DIR = Path("dist")
 
 # =============================================================================
 # Data Types
@@ -38,6 +32,28 @@ class PageMetadata:
     head_title: str
     title: str
     content: str
+
+
+@dataclass
+class ProjectPaths:
+    base: Path
+    src: Path
+    pages: Path
+    components: Path
+    static: Path
+    output: Path
+
+    @classmethod
+    def from_base(cls, base_path: Path) -> "ProjectPaths":
+        src = base_path / "src"
+        return cls(
+            base=base_path,
+            src=src,
+            pages=src / "pages",
+            components=src / "components",
+            static=src / "static",
+            output=base_path / "dist",
+        )
 
 # =============================================================================
 # Component Processing
@@ -75,9 +91,9 @@ def scope_css_selectors(html: str, css: str, scope_id: int) -> tuple[str, str]:
     return html, css
 
 
-def load_component(name: str, inputs: dict[str, str]) -> Component:
+def load_component(name: str, inputs: dict[str, str], paths: ProjectPaths) -> Component:
     """Load and process a component definition."""
-    base_path = COMPONENTS_DIR / name
+    base_path = paths.components / name
     html_path = base_path / f"{name}.html"
     css_path = base_path / f"{name}.css"
     js_path = base_path / f"{name}.js"
@@ -117,7 +133,7 @@ def load_component(name: str, inputs: dict[str, str]) -> Component:
     return Component(html=html, css=css)
 
 
-def process_components(content: str, known_components: set[str]) -> tuple[str, list[str]]:
+def process_components(content: str, known_components: set[str], paths: ProjectPaths) -> tuple[str, list[str]]:
     """Replace all <c-*> tags with their component HTML. Returns processed content and collected styles."""
     collected_styles: list[str] = []
     
@@ -134,7 +150,7 @@ def process_components(content: str, known_components: set[str]) -> tuple[str, l
         if children:
             inputs["children"] = children
         
-        component = load_component(component_name, inputs)
+        component = load_component(component_name, inputs, paths)
         
         if component.css:
             collected_styles.append(component.css)
@@ -345,61 +361,81 @@ def generate_page(skeleton: str, metadata: PageMetadata, page_id: str, styles: l
 # Build Process
 # =============================================================================
 
-def copy_static_files():
+def copy_static_files(paths: ProjectPaths):
     """Copy CSS, JS, and static assets to output directory."""
     # Root-level CSS and JS
     for pattern in ("*.css", "*.js"):
-        for file in SRC_DIR.glob(pattern):
-            shutil.copyfile(file, OUTPUT_DIR / file.name)
+        for file in paths.src.glob(pattern):
+            shutil.copyfile(file, paths.output / file.name)
     
     # Static directory
-    static_output = OUTPUT_DIR / "static"
-    static_output.mkdir(parents=True, exist_ok=True)
-    
-    for file in STATIC_DIR.glob("**/*"):
-        if file.is_file():
-            shutil.copyfile(file, static_output / file.name)
+    if paths.static.exists():
+        static_output = paths.output / "static"
+        static_output.mkdir(parents=True, exist_ok=True)
+        
+        for file in paths.static.glob("**/*"):
+            if file.is_file():
+                shutil.copyfile(file, static_output / file.name)
 
 
-def build():
+def build(base_path: Path):
     """Main build process."""
-    OUTPUT_DIR.mkdir(exist_ok=True)
+    paths = ProjectPaths.from_base(base_path)
+    
+    print(f"Building project: {paths.base.resolve()}")
+    
+    paths.output.mkdir(exist_ok=True)
     
     # Load skeleton
-    skeleton_path = SRC_DIR / "skeleton.html"
+    skeleton_path = paths.src / "skeleton.html"
     if not skeleton_path.exists():
-        print(f"Error: skeleton.html missing in {SRC_DIR}/")
+        print(f"Error: skeleton.html missing in {paths.src}/")
         return
     
     skeleton = skeleton_path.read_text()
     
     # Discover available components
-    known_components = {path.name for path in COMPONENTS_DIR.iterdir() if path.is_dir()}
+    known_components = set()
+    if paths.components.exists():
+        known_components = {path.name for path in paths.components.iterdir() if path.is_dir()}
     
     # Process pages
-    html_files = list(PAGES_DIR.glob("*.html"))
+    if not paths.pages.exists():
+        print(f"Error: pages directory missing at {paths.pages}/")
+        return
+    
+    html_files = list(paths.pages.glob("*.html"))
     if not html_files:
-        print(f"No HTML files found in {PAGES_DIR}/")
+        print(f"No HTML files found in {paths.pages}/")
         return
     
     for src_file in html_files:
         print(f"Processing: {src_file.name}")
         
         content = src_file.read_text()
-        content, styles = process_components(content, known_components)
+        content, styles = process_components(content, known_components, paths)
         metadata = extract_page_metadata(content)
         
         print(f"  Title: {metadata.head_title}")
         
         output_html = generate_page(skeleton, metadata, src_file.stem, styles)
         
-        out_file = OUTPUT_DIR / src_file.name
+        out_file = paths.output / src_file.name
         out_file.write_text(output_html)
         print(f"  -> {out_file}")
     
-    copy_static_files()
+    copy_static_files(paths)
     print("Build complete.")
 
 
 if __name__ == "__main__":
-    build()
+    if len(sys.argv) > 1:
+        base = Path(sys.argv[1])
+    else:
+        base = Path.cwd()
+    
+    if not base.exists():
+        print(f"Error: Path does not exist: {base}")
+        sys.exit(1)
+    
+    build(base)

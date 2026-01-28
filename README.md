@@ -29,8 +29,9 @@ dist/                    # Build output
 ## Usage
 
 ```bash
-python build.py
+python build.py [project_path]
 ```
+project_path is the root directory containing src/ folder. Optional (default = current directory)
 
 ## Pages
 

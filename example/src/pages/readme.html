@@ -22,8 +22,9 @@ dist/                    <span class="hljs-meta"># Build output</span>
 ├── *.js
 └── static/
 </code></pre><h2 id="usage">Usage</h2>
-<pre><code class="lang-bash"><span class="hljs-keyword">python</span> build.<span class="hljs-keyword">py</span>
+<pre><code class="lang-bash"><span class="hljs-keyword">python</span> build.<span class="hljs-keyword">py</span> [project_path]
 </code></pre>
+<p>project_path is the root directory containing an src/ folder. Optional (default = current directory)</p>
 <h2 id="pages">Pages</h2>
 <p>Pages live in <code>src/pages/</code> and are injected into <code>skeleton.html</code>. Each page can define metadata using directives at the top of the file:</p>
 <pre><code class="lang-html"><span class="hljs-comment">#PAGE_TITLE:About Us</span>
