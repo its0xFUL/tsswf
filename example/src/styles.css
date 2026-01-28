@@ -42,7 +42,7 @@ body[data-page="readme"] {
     max-width: 1200px;
     height: unset;
     display: block;
-    margin-top: 8rem;
+    margin-top: 10rem;
     margin-bottom: 25vh;
 
     &::before {
