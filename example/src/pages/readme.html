@@ -60,7 +60,7 @@ dist/                    <span class="hljs-meta"># Build output</span>
 
     <span class="hljs-tag">&lt;<span class="hljs-name">title</span>&gt;</span>#PAGE_HEAD_TITLE | My Website<span class="hljs-tag">&lt;/<span class="hljs-name">title</span>&gt;</span>
 
-    <span class="hljs-tag">&lt;<span class="hljs-name">link</span> <span class="hljs-attr">rel</span>=<span class="hljs-string">"stylesheet"</span> <span class="hljs-attr">href</span>=<span class="hljs-string">"styles.css?v=#CSS_HASH"</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">link</span> <span class="hljs-attr">rel</span>=<span class="hljs-string">"stylesheet"</span> <span class="hljs-attr">href</span>=<span class="hljs-string">"styles.css?v=#<span class="invisible"></span>CSS_HASH"</span>&gt;</span>
   <span class="hljs-tag">&lt;/<span class="hljs-name">head</span>&gt;</span>
   <span class="hljs-tag">&lt;<span class="hljs-name">body</span> <span class="hljs-attr">data-page</span>=<span class="hljs-string">"#PAGE_ID"</span>&gt;</span>
     <span class="hljs-tag">&lt;<span class="hljs-name">h1</span>&gt;</span>#PAGE_TITLE<span class="hljs-tag">&lt;/<span class="hljs-name">h1</span>&gt;</span>
@@ -91,11 +91,11 @@ dist/                    <span class="hljs-meta"># Build output</span>
 <td>The page&#39;s HTML content</td>
 </tr>
 <tr>
-<td><code>#PAGE_ID</code></td>
+<td><code>#<span class="invisible"></span>PAGE_ID</code></td>
 <td>Filename without extension (e.g., <code>about</code> for <code>about.html</code>)</td>
 </tr>
 <tr>
-<td><code>#CSS_HASH</code></td>
+<td><code>#<span class="invisible"></span>CSS_HASH</code></td>
 <td>Random cache-busting hash</td>
 </tr>
 </tbody>

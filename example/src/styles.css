@@ -70,4 +70,8 @@ body[data-page="readme"] {
   pre {
     white-space: break-spaces;
   }
+
+  .invisible {
+    display: none;
+  }
 }
