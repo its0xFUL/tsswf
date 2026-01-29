@@ -48,6 +48,7 @@ Pages live in `src/pages/` and are injected into `skeleton.html`. Each page can 
 |-----------|-------------|
 | `#PAGE_TITLE:` | Page title (available as `#PAGE_TITLE` in skeleton) |
 | `#PAGE_HEAD_TITLE:` | Browser tab title (falls back to `#PAGE_TITLE` if omitted) |
+| `#CSS_HASH:` | Random cache-busting hash |
 
 ## Skeleton
 
@@ -151,11 +152,11 @@ If a component has a `.js` file, it's inlined as a `<script>` tag after the comp
 Use `@IF` / `@ELSE` blocks for conditional rendering. These work in both pages and the skeleton.
 
 ```html
-@IF(showBanner) {
+@IF(#PAGE_ID == "index") {
     <div class="banner">Welcome!</div>
 }
 
-@IF(count > 0) {
+@IF({count} > 0) {
     <p>You have items.</p>
 } @ELSE {
     <p>No items yet.</p>
@@ -166,12 +167,12 @@ Use `@IF` / `@ELSE` blocks for conditional rendering. These work in both pages a
 
 | Operator | Example |
 |----------|---------|
-| `==` | `@IF(status == "active")` |
-| `!=` | `@IF(type != "hidden")` |
-| `<` `>` `<=` `>=` | `@IF(count >= 10)` |
-| `AND` | `@IF(loggedIn AND isAdmin)` |
-| `OR` | `@IF(showA OR showB)` |
-| `NOT` | `@IF(NOT disabled)` |
+| `==` | `@IF(#PAGE_ID == "index")` |
+| `!=` | `@IF({type} != "hidden")` |
+| `<` `>` `<=` `>=` | `@IF({count} >= 10)` |
+| `AND` | `@IF({loggedIn} AND {isAdmin})` |
+| `OR` | `@IF({showA} OR {showB})` |
+| `NOT` | `@IF(NOT {disabled})` |
 
 ### Values
 

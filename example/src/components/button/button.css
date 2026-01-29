@@ -6,6 +6,7 @@
   border-radius: 10px;
   border-color: blue;
   border-width: 1px;
+  border-style: solid;
 
   background-color: transparent;
   color: blue;
@@ -15,5 +16,18 @@
     background-color: blue;
     color: white;
     cursor: pointer;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .customButton {
+    border-color: #D50000;
+    color: #D50000;
+    transition: color 250ms ease, background-color 250ms ease;
+
+    &:hover {
+      background-color: #D50000;
+      color: black;
+    }
   }
 }

@@ -18,6 +18,18 @@ h1,h2,h3 {
   font-weight: 300;
 }
 
+a {
+  &:link {
+    color: rgb(0, 0, 218);
+  }
+  &:visited {
+    color: rgb(0, 0, 174);
+  }
+  &:hover,&:active {
+    color: rgb(0, 0, 255);
+  }
+}
+
 .stack-sans {
   font-family: "Stack Sans Text", sans-serif;
   font-optical-sizing: auto;
@@ -73,5 +85,30 @@ body[data-page="readme"] {
 
   .invisible {
     display: none;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    background-color: black;
+    color: #a4a4a4;
+  }
+
+  body[data-page="readme"] {
+    main::before {
+      background: linear-gradient(180deg,rgba(0, 0, 0, 1) 50%, rgba(0, 0, 0, 0) 100%);
+    }
+  }
+
+  a {
+    &:link {
+      color: #D50000;
+    }
+    &:visited {
+      color: #ba0101;
+    }
+    &:hover,&:active {
+      color: #f70000;
+    }
   }
 }

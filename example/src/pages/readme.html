@@ -147,12 +147,12 @@ dist/                    <span class="hljs-meta"># Build output</span>
 <h3 id="component-js">Component JS</h3>
 <p>If a component has a <code>.js</code> file, it&#39;s inlined as a <code>&lt;script&gt;</code> tag after the component HTML.</p>
 <h2 id="conditionals">Conditionals</h2>
-<p>Use <code>@IF</code> / <code>@ELSE</code> blocks for conditional rendering. These work in both pages and the skeleton.</p>
-<pre><code class="lang-html"><span class="hljs-meta">@IF(showBanner)</span> {
+<p>Use <code>@<span class="invisible"></span>IF</code> / <code>@ELSE</code> blocks for conditional rendering. These work in both pages and the skeleton.</p>
+<pre><code class="lang-html"><span class="hljs-meta">@<span class="invisible"></span>IF(#<span class="invisible"></span>PAGE_ID == "index")</span> {
     <span class="hljs-variable">&lt;div class="banner"&gt;</span>Welcome!<span class="hljs-variable">&lt;/div&gt;</span>
 }
 
-<span class="hljs-meta">@IF(count</span> &gt; 0) {
+<span class="hljs-meta">@<span class="invisible"></span>IF({count}</span> &gt; 0) {
     <span class="hljs-variable">&lt;p&gt;</span>You have items.<span class="hljs-variable">&lt;/p&gt;</span>
 } <span class="hljs-meta">@ELSE</span> {
     <span class="hljs-variable">&lt;p&gt;</span>No items yet.<span class="hljs-variable">&lt;/p&gt;</span>
@@ -169,27 +169,27 @@ dist/                    <span class="hljs-meta"># Build output</span>
 <tbody>
 <tr>
 <td><code>==</code></td>
-<td><code>@IF(status == &quot;active&quot;)</code></td>
+<td><code>@<span class="invisible"></span>IF(#<span class="invisible"></span>PAGE_ID == &quot;index&quot;)</code></td>
 </tr>
 <tr>
 <td><code>!=</code></td>
-<td><code>@IF(type != &quot;hidden&quot;)</code></td>
+<td><code>@<span class="invisible"></span>IF({type} != &quot;hidden&quot;)</code></td>
 </tr>
 <tr>
 <td><code>&lt;</code> <code>&gt;</code> <code>&lt;=</code> <code>&gt;=</code></td>
-<td><code>@IF(count &gt;= 10)</code></td>
+<td><code>@<span class="invisible"></span>IF({count} &gt;= 10)</code></td>
 </tr>
 <tr>
 <td><code>AND</code></td>
-<td><code>@IF(loggedIn AND isAdmin)</code></td>
+<td><code>@<span class="invisible"></span>IF({loggedIn} AND {isAdmin})</code></td>
 </tr>
 <tr>
 <td><code>OR</code></td>
-<td><code>@IF(showA OR showB)</code></td>
+<td><code>@<span class="invisible"></span>IF({showA} OR {showB})</code></td>
 </tr>
 <tr>
 <td><code>NOT</code></td>
-<td><code>@IF(NOT disabled)</code></td>
+<td><code>@<span class="invisible"></span>IF(NOT {disabled})</code></td>
 </tr>
 </tbody>
 </table>
