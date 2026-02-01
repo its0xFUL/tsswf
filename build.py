@@ -320,7 +320,7 @@ SIGNAL_CLASS_PATTERN = re.compile(
 )
 
 ELEMENT_WITH_SIGNAL_CLASS = re.compile(
-    r'<(\w+)([^>]*data-signal-class\.[^>]*)>',
+    r'<(\w+)((?:\s+[a-zA-Z_][\w.-]*(?:="[^"]*"|=\'[^\']*\'|=[^\s>]*)?)*)\s*/?>',
     re.DOTALL
 )
 
@@ -392,11 +392,17 @@ def process_signal_classes(html: str) -> tuple[str, str]:
         
         tag_name = match.group(1)
         attrs = match.group(2)
+        full_match = match.group(0)
+        is_self_closing = full_match.rstrip().endswith('/>')
+        
+        # Only process if this element has signal-class attributes
+        if 'data-signal-class.' not in attrs:
+            return full_match
         
         # Find all signal-class bindings on this element
         bindings = SIGNAL_CLASS_PATTERN.findall(attrs)
         if not bindings:
-            return match.group(0)
+            return full_match
         
         # Generate element ID
         element_id = f"__sc_{element_counter}"
@@ -433,9 +439,16 @@ def process_signal_classes(html: str) -> tuple[str, str]:
   update();
 }})();""")
         
-        return f'<{tag_name}{cleaned_attrs}>'
+        closing = ' />' if is_self_closing else '>'
+        return f'<{tag_name}{cleaned_attrs}{closing}'
     
-    html = ELEMENT_WITH_SIGNAL_CLASS.sub(process_element, html)
+    # Match all opening/self-closing tags and process those with signal-class
+    ALL_TAGS = re.compile(
+        r'<(\w+)((?:\s+[a-zA-Z_][\w.-]*(?:="[^"]*"|=\'[^\']*\'|=[^\s>]*)?)*)\s*/?>',
+        re.DOTALL
+    )
+    
+    html = ALL_TAGS.sub(process_element, html)
     
     generated_js = ""
     if generated_blocks:
