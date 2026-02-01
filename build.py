@@ -3,7 +3,7 @@
 TSSWF - Static site generator with component support.
 
 Processes HTML pages with custom <c-*> components, conditional blocks,
-and CSS scoping.
+CSS scoping, and signal expression transforms.
 
 Usage: python build.py [project_path]
   project_path: Root directory containing src/ folder (default: current directory)
@@ -304,6 +304,165 @@ def process_conditionals(html: str) -> str:
     return ''.join(result)
 
 # =============================================================================
+# Signal Expression Processing
+# =============================================================================
+
+SIGNAL_IF_PATTERN = re.compile(
+    r'(<\w+[^>]*)\s+data-signal-if="([^"]+)"([^>]*>)',
+    re.DOTALL
+)
+
+SIGNAL_VAR_PATTERN = re.compile(r'\$\{(\w+)\}')
+
+SIGNAL_CLASS_PATTERN = re.compile(
+    r'data-signal-class\.([a-zA-Z_][a-zA-Z0-9_-]*)="([^"]+)"',
+    re.DOTALL
+)
+
+ELEMENT_WITH_SIGNAL_CLASS = re.compile(
+    r'<(\w+)([^>]*data-signal-class\.[^>]*)>',
+    re.DOTALL
+)
+
+_signal_counter = 0
+
+
+def reset_signal_counter():
+    """Reset the signal counter. Call at the start of each page build."""
+    global _signal_counter
+    _signal_counter = 0
+
+
+def process_signal_if(html: str) -> tuple[str, str]:
+    """
+    Transform data-signal-if="expr" into data-signal-checker with generated computed signals.
+    Returns (processed_html, generated_js).
+    """
+    global _signal_counter
+    generated_signals: list[str] = []
+    
+    def replace_signal_if(match: re.Match) -> str:
+        global _signal_counter
+        before_attr = match.group(1)
+        expression = match.group(2)
+        after_attr = match.group(3)
+        
+        # Generate unique name for this computed signal
+        signal_name = f"__computed_{_signal_counter}"
+        _signal_counter += 1
+        
+        # Find all signal references like ${count}
+        referenced_signals = SIGNAL_VAR_PATTERN.findall(expression)
+        
+        # Transform expression: ${count} -> count.get()
+        js_expression = SIGNAL_VAR_PATTERN.sub(r'\1.get()', expression)
+        
+        # Build dependency array
+        deps_array = ', '.join(referenced_signals) if referenced_signals else ''
+        
+        # Generate the computed signal creation
+        generated_signals.append(
+            f"window.{signal_name} = createComputed('{signal_name}', () => {js_expression}, [{deps_array}]);"
+        )
+        
+        return f'{before_attr} data-signal-checker="{signal_name}"{after_attr}'
+    
+    processed_html = SIGNAL_IF_PATTERN.sub(replace_signal_if, html)
+    
+    generated_js = ""
+    if generated_signals:
+        generated_js = "\n".join(generated_signals)
+    
+    return processed_html, generated_js
+
+
+def process_signal_classes(html: str) -> tuple[str, str]:
+    """
+    Transform data-signal-class.classname="expr" into JS that toggles classes.
+    Groups all class bindings per element into a single IIFE.
+    Returns (processed_html, generated_js).
+    """
+    global _signal_counter
+    generated_blocks: list[str] = []
+    element_counter = 0
+    
+    def process_element(match: re.Match) -> str:
+        global _signal_counter
+        nonlocal element_counter
+        
+        tag_name = match.group(1)
+        attrs = match.group(2)
+        
+        # Find all signal-class bindings on this element
+        bindings = SIGNAL_CLASS_PATTERN.findall(attrs)
+        if not bindings:
+            return match.group(0)
+        
+        # Generate element ID
+        element_id = f"__sc_{element_counter}"
+        element_counter += 1
+        
+        # Remove all data-signal-class.* attributes and add the ID
+        cleaned_attrs = SIGNAL_CLASS_PATTERN.sub('', attrs)
+        cleaned_attrs = re.sub(r'\s+', ' ', cleaned_attrs).strip()
+        cleaned_attrs = f' data-signal-class-id="{element_id}" {cleaned_attrs}'.rstrip()
+        
+        # Collect all dependencies and build update statements
+        all_deps: set[str] = set()
+        update_lines: list[str] = []
+        
+        for class_name, expression in bindings:
+            referenced_signals = SIGNAL_VAR_PATTERN.findall(expression)
+            all_deps.update(referenced_signals)
+            
+            js_expression = SIGNAL_VAR_PATTERN.sub(r'\1.get()', expression)
+            update_lines.append(
+                f"    el.classList.toggle('{class_name}', !!({js_expression}));"
+            )
+        
+        deps_array = ', '.join(sorted(all_deps))
+        updates = '\n'.join(update_lines)
+        
+        generated_blocks.append(f"""\
+(function() {{
+  const el = document.querySelector('[data-signal-class-id="{element_id}"]');
+  const update = () => {{
+{updates}
+  }};
+  [{deps_array}].forEach(s => s.subscribe(update));
+  update();
+}})();""")
+        
+        return f'<{tag_name}{cleaned_attrs}>'
+    
+    html = ELEMENT_WITH_SIGNAL_CLASS.sub(process_element, html)
+    
+    generated_js = ""
+    if generated_blocks:
+        generated_js = "\n".join(generated_blocks)
+    
+    return html, generated_js
+
+
+def process_signal_expressions(html: str) -> tuple[str, str]:
+    """
+    Process all signal expression transforms (data-signal-if, data-signal-class.*).
+    Returns (processed_html, generated_js).
+    """
+    reset_signal_counter()
+    
+    html, signal_if_js = process_signal_if(html)
+    html, signal_class_js = process_signal_classes(html)
+    
+    # Combine all generated JS
+    js_parts = [js for js in [signal_if_js, signal_class_js] if js]
+    combined_js = ""
+    if js_parts:
+        combined_js = "<script>\n" + "\n".join(js_parts) + "\n</script>"
+    
+    return html, combined_js
+
+# =============================================================================
 # Page Generation
 # =============================================================================
 
@@ -355,7 +514,16 @@ def generate_page(skeleton: str, metadata: PageMetadata, page_id: str, styles: l
     for style in styles:
         html = re.sub(r'</head>', f"{style}\n</head>", html, flags=re.IGNORECASE)
     
-    return process_conditionals(html)
+    # Process conditionals (build-time @IF/@ELSE)
+    html = process_conditionals(html)
+    
+    # Process signal expressions (runtime data-signal-if, data-signal-class.*)
+    html, signal_js = process_signal_expressions(html)
+    if signal_js:
+        # Inject before </body> so signals library is already loaded
+        html = re.sub(r'</body>', f"{signal_js}\n</body>", html, flags=re.IGNORECASE)
+    
+    return html
 
 # =============================================================================
 # Build Process
