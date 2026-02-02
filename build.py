@@ -335,7 +335,7 @@ def reset_signal_counter():
 
 def process_signal_if(html: str) -> tuple[str, str]:
     """
-    Transform data-signal-if="expr" into data-signal-checker with generated computed signals.
+    Transform data-signal-if="expr" into data-signal-check with generated computed signals.
     Returns (processed_html, generated_js).
     """
     global _signal_counter
@@ -365,7 +365,7 @@ def process_signal_if(html: str) -> tuple[str, str]:
             f"window.{signal_name} = createComputed('{signal_name}', () => {js_expression}, [{deps_array}]);"
         )
         
-        return f'{before_attr} data-signal-checker="{signal_name}"{after_attr}'
+        return f'{before_attr} data-signal-check="{signal_name}"{after_attr}'
     
     processed_html = SIGNAL_IF_PATTERN.sub(replace_signal_if, html)
     
